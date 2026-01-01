@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
     ReactFlow,
     Background,
@@ -16,6 +16,7 @@ import { CustomEdge } from './edges/CustomEdge'
 import type { ServiceNode as ServiceNodeType, GroupNode as GroupNodeType, DragData } from '../types'
 import { generateId } from '../lib/utils'
 import { MousePointer2, Move3D } from 'lucide-react'
+import { ContextMenu } from './ContextMenu'
 
 const nodeTypes = {
     service: ServiceNode,
@@ -46,6 +47,42 @@ export function Canvas() {
     const addNode = useSynapseStore((state) => state.addNode)
     const setSelectedNodeId = useSynapseStore((state) => state.setSelectedNodeId)
     const setSelectedEdgeId = useSynapseStore((state) => state.setSelectedEdgeId)
+
+    // Context Menu State
+    const [menu, setMenu] = useState<{
+        visible: boolean
+        x: number
+        y: number
+        targetId: string | null
+        type: 'node' | 'pane' | null
+    } | null>(null)
+
+    const onNodeContextMenu = useCallback(
+        (event: React.MouseEvent, node: ServiceNodeType | GroupNodeType) => {
+            event.preventDefault()
+            setMenu({
+                visible: true,
+                x: event.clientX,
+                y: event.clientY,
+                targetId: node.id,
+                type: 'node',
+            })
+        },
+        []
+    )
+
+    const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
+        event.preventDefault()
+        setMenu({
+            visible: true,
+            x: (event as React.MouseEvent).clientX,
+            y: (event as React.MouseEvent).clientY,
+            targetId: null,
+            type: 'pane',
+        })
+    }, [])
+
+    const closeMenu = useCallback(() => setMenu(null), [])
 
     // Handle drag over
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -135,7 +172,8 @@ export function Canvas() {
     const onPaneClick = useCallback(() => {
         setSelectedNodeId(null)
         setSelectedEdgeId(null)
-    }, [setSelectedNodeId, setSelectedEdgeId])
+        closeMenu()
+    }, [setSelectedNodeId, setSelectedEdgeId, closeMenu])
 
     // Memoize minimap node color
     const minimapNodeColor = useCallback(() => '#22d3ee', [])
@@ -151,6 +189,8 @@ export function Canvas() {
                 onNodeClick={onNodeClick}
                 onEdgeClick={onEdgeClick}
                 onPaneClick={onPaneClick}
+                onNodeContextMenu={onNodeContextMenu as any}
+                onPaneContextMenu={onPaneContextMenu}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 onViewportChange={onViewportChange}
@@ -221,6 +261,17 @@ export function Canvas() {
                     </div>
                 </Panel>
             </ReactFlow>
+
+            {/* Context Menu - Rendered outside ReactFlow to avoid transform issues */}
+            {menu?.visible && (
+                <ContextMenu
+                    x={menu.x}
+                    y={menu.y}
+                    targetId={menu.targetId}
+                    type={menu.type}
+                    onClose={closeMenu}
+                />
+            )}
         </div>
     )
 }

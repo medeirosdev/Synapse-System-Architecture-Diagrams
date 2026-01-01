@@ -42,7 +42,7 @@ const initialViewport: Viewport = {
 export const useSynapseStore = create<SynapseState>()(
     subscribeWithSelector(
         temporal(
-            (set) => ({
+            (set, get) => ({
                 // ============================================
                 // Initial State
                 // ============================================
@@ -99,6 +99,67 @@ export const useSynapseStore = create<SynapseState>()(
                             (edge) => edge.source !== id && edge.target !== id
                         ),
                         selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
+                    }))
+                },
+
+                /**
+                 * Duplicate a node.
+                 */
+                duplicateNode: (id: string) => {
+                    const state = get()
+                    const nodeToClone = state.nodes.find((n) => n.id === id)
+                    if (!nodeToClone) return
+
+                    const newId = generateId()
+                    const offset = 20
+
+                    // Clone data properly
+                    const newData = JSON.parse(JSON.stringify(nodeToClone.data))
+
+                    // Create new node with offset
+                    const newNode = {
+                        ...nodeToClone,
+                        id: newId,
+                        position: {
+                            x: nodeToClone.position.x + offset,
+                            y: nodeToClone.position.y + offset,
+                        },
+                        data: {
+                            ...newData,
+                            label: `${newData.label} (Copy)`,
+                        },
+                        selected: true,
+                    }
+
+                    // Deselect original, select copy
+                    set((state) => ({
+                        nodes: [...state.nodes.map(n => ({ ...n, selected: false })), newNode],
+                        selectedNodeId: newId
+                    }))
+                },
+
+                /**
+                 * Bring node to front (z-index).
+                 */
+                bringToFront: (id: string) => {
+                    set((state) => {
+                        const maxZ = Math.max(...state.nodes.map((n) => n.zIndex || 0), 0)
+                        return {
+                            nodes: state.nodes.map((n) =>
+                                n.id === id ? { ...n, zIndex: maxZ + 1 } : n
+                            ),
+                        }
+                    })
+                },
+
+                /**
+                 * Send node to back (z-index).
+                 */
+                sendToBack: (id: string) => {
+                    set((state) => ({
+                        nodes: state.nodes.map((n) =>
+                            n.id === id ? { ...n, zIndex: -5 } : n
+                        ),
                     }))
                 },
 

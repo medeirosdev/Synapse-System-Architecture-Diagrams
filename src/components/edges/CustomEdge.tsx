@@ -1,4 +1,10 @@
-import { BaseEdge, getBezierPath, type EdgeProps } from '@xyflow/react'
+import {
+    BaseEdge,
+    getBezierPath,
+    getStraightPath,
+    getSmoothStepPath,
+    type EdgeProps
+} from '@xyflow/react'
 import type { SynapseEdgeData } from '../../types'
 import { getEdgeColor } from '../../lib/utils'
 
@@ -17,14 +23,35 @@ export function CustomEdge({
     const color = getEdgeColor(edgeData?.color || 'cyan')
     const isAnimated = edgeData?.animated !== false
 
-    const [edgePath] = getBezierPath({
+    const edgeType = edgeData?.type || 'default'
+
+    let edgePath = ''
+    let labelX = 0
+    let labelY = 0
+
+    const params = {
         sourceX,
         sourceY,
         sourcePosition,
         targetX,
         targetY,
         targetPosition,
-    })
+    }
+
+    switch (edgeType) {
+        case 'straight':
+            [edgePath, labelX, labelY] = getStraightPath(params)
+            break
+        case 'step':
+            [edgePath, labelX, labelY] = getSmoothStepPath({ ...params, borderRadius: 0 })
+            break
+        case 'smoothstep':
+            [edgePath, labelX, labelY] = getSmoothStepPath(params)
+            break
+        default:
+            [edgePath, labelX, labelY] = getBezierPath(params)
+            break
+    }
 
     return (
         <>
@@ -67,21 +94,23 @@ export function CustomEdge({
 
             {/* Label da edge */}
             {edgeData?.label && (
-                <text>
-                    <textPath
-                        href={`#${id}`}
-                        startOffset="50%"
-                        textAnchor="middle"
-                        style={{
-                            fontSize: 11,
-                            fill: '#94a3b8',
-                            fontWeight: 500,
-                        }}
-                    >
+                <text
+                    x={labelX}
+                    y={labelY}
+                    style={{
+                        fontSize: 11,
+                        fill: '#94a3b8',
+                        fontWeight: 500,
+                        textAnchor: 'middle',
+                        dominantBaseline: 'middle',
+                    }}
+                >
+                    <tspan dy="-15" style={{ fill: '#94a3b8', background: 'rgba(15, 23, 42, 0.8)' }}>
                         {edgeData.label}
-                    </textPath>
+                    </tspan>
                 </text>
             )}
         </>
     )
 }
+

@@ -26,6 +26,13 @@ const edgeColors: { value: EdgeColor; label: string; color: string }[] = [
     { value: 'white', label: 'White', color: '#f1f5f9' },
 ]
 
+const edgeTypes: { value: string; label: string }[] = [
+    { value: 'default', label: 'Bezier (Curved)' },
+    { value: 'straight', label: 'Straight' },
+    { value: 'step', label: 'Step (Angled)' },
+    { value: 'smoothstep', label: 'Smooth Step' },
+]
+
 const groupColors: { value: GroupColor; label: string; color: string }[] = [
     { value: 'cyan', label: 'Cyan', color: '#22d3ee' },
     { value: 'purple', label: 'Purple', color: '#a855f7' },
@@ -252,6 +259,29 @@ export function PropertyPanel() {
                                     }}
                                     title={color.label}
                                 />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Connection Type */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                            Connection Type
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {edgeTypes.map((type) => (
+                                <button
+                                    key={type.value}
+                                    onClick={() => updateEdge(selectedEdge.id, { type: type.value as any })}
+                                    className={cn(
+                                        'px-3 py-2 rounded-lg text-xs font-medium border transition-colors',
+                                        selectedEdge.data?.type === type.value || (!selectedEdge.data?.type && type.value === 'default')
+                                            ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400'
+                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
+                                    )}
+                                >
+                                    {type.label}
+                                </button>
                             ))}
                         </div>
                     </div>
