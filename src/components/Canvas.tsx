@@ -11,13 +11,15 @@ import '@xyflow/react/dist/style.css'
 
 import { useSynapseStore } from '../store/useSynapseStore'
 import { ServiceNode } from './nodes/ServiceNode'
+import { GroupNode } from './nodes/GroupNode'
 import { CustomEdge } from './edges/CustomEdge'
-import type { ServiceNode as ServiceNodeType, DragData } from '../types'
+import type { ServiceNode as ServiceNodeType, GroupNode as GroupNodeType, DragData } from '../types'
 import { generateId } from '../lib/utils'
 import { MousePointer2, Move3D } from 'lucide-react'
 
 const nodeTypes = {
     service: ServiceNode,
+    group: GroupNode,
 }
 
 const edgeTypes = {
@@ -77,22 +79,38 @@ export function Canvas() {
                 y: Math.round(position.y / 16) * 16,
             }
 
-            const newNode: ServiceNodeType = {
-                id: generateId(),
-                type: 'service',
-                position: snappedPosition,
-                style: { width: 280, height: 180 },
-                data: {
-                    label: dragData.label,
-                    icon: dragData.icon,
-                    status: 'idle',
-                    description: '',
-                    metadata: {},
-                },
+            // Check if it's a group node
+            if (dragData.type === 'group') {
+                const newGroup: GroupNodeType = {
+                    id: generateId(),
+                    type: 'group',
+                    position: snappedPosition,
+                    style: { width: 400, height: 300 },
+                    data: {
+                        label: dragData.label,
+                        color: 'cyan',
+                        description: '',
+                    },
+                }
+                addNode(newGroup as any)
+                setSelectedNodeId(newGroup.id)
+            } else {
+                const newNode: ServiceNodeType = {
+                    id: generateId(),
+                    type: 'service',
+                    position: snappedPosition,
+                    style: { width: 280, height: 180 },
+                    data: {
+                        label: dragData.label,
+                        icon: dragData.icon || 'Box',
+                        status: 'idle',
+                        description: '',
+                        metadata: {},
+                    },
+                }
+                addNode(newNode)
+                setSelectedNodeId(newNode.id)
             }
-
-            addNode(newNode)
-            setSelectedNodeId(newNode.id)
         },
         [addNode, viewport, setSelectedNodeId]
     )
@@ -125,7 +143,7 @@ export function Canvas() {
     return (
         <div ref={reactFlowWrapper} className="flex-1 h-full relative">
             <ReactFlow
-                nodes={nodes}
+                nodes={nodes as any}
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}

@@ -40,6 +40,28 @@ export interface ServiceNodeData extends Record<string, unknown> {
  */
 export type ServiceNode = Node<ServiceNodeData, 'service'>
 
+/**
+ * Available color options for group containers.
+ */
+export type GroupColor = 'cyan' | 'purple' | 'green' | 'yellow' | 'red'
+
+/**
+ * Data structure for group container nodes.
+ */
+export interface GroupNodeData extends Record<string, unknown> {
+    /** Display name shown on the group header */
+    label: string
+    /** Container border/accent color */
+    color: GroupColor
+    /** Optional description text */
+    description?: string
+}
+
+/**
+ * Complete group node type.
+ */
+export type GroupNode = Node<GroupNodeData, 'group'>
+
 // ============================================
 // Edge Types
 // ============================================
@@ -107,7 +129,7 @@ export interface IconDefinition {
  */
 export interface SynapseState {
     // Data
-    nodes: ServiceNode[]
+    nodes: (ServiceNode | GroupNode)[]
     edges: SynapseEdge[]
     viewport: Viewport
 
@@ -116,8 +138,8 @@ export interface SynapseState {
     selectedEdgeId: string | null
 
     // Actions - Nodes
-    addNode: (node: ServiceNode) => void
-    updateNode: (id: string, data: Partial<ServiceNodeData>) => void
+    addNode: (node: ServiceNode | GroupNode) => void
+    updateNode: (id: string, data: Record<string, any>) => void
     removeNode: (id: string) => void
 
     // Actions - Edges
@@ -135,7 +157,7 @@ export interface SynapseState {
     setSelectedEdgeId: (id: string | null) => void
 
     // Actions - Persistence
-    loadState: (state: { nodes: ServiceNode[]; edges: SynapseEdge[]; viewport: Viewport }) => void
+    loadState: (state: { nodes: (ServiceNode | GroupNode)[]; edges: SynapseEdge[]; viewport: Viewport }) => void
     clearAll: () => void
 }
 
@@ -168,4 +190,6 @@ export interface DragData {
     icon: string
     /** Default label for the new node */
     label: string
+    /** Node type (service or group) */
+    type?: 'service' | 'group'
 }

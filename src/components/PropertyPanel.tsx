@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { useSynapseStore } from '../store/useSynapseStore'
 import { iconDefinitions, categoryLabels, getCategories } from '../config/icons'
-import type { NodeStatus, EdgeColor } from '../types'
+import type { NodeStatus, EdgeColor, GroupColor } from '../types'
 import { cn } from '../lib/utils'
 
 const statusOptions: { value: NodeStatus; label: string; color: string }[] = [
@@ -24,6 +24,14 @@ const edgeColors: { value: EdgeColor; label: string; color: string }[] = [
     { value: 'red', label: 'Red', color: '#f87171' },
     { value: 'pink', label: 'Pink', color: '#f472b6' },
     { value: 'white', label: 'White', color: '#f1f5f9' },
+]
+
+const groupColors: { value: GroupColor; label: string; color: string }[] = [
+    { value: 'cyan', label: 'Cyan', color: '#22d3ee' },
+    { value: 'purple', label: 'Purple', color: '#a855f7' },
+    { value: 'green', label: 'Green', color: '#4ade80' },
+    { value: 'yellow', label: 'Yellow', color: '#facc15' },
+    { value: 'red', label: 'Red', color: '#f87171' },
 ]
 
 export function PropertyPanel() {
@@ -66,7 +74,7 @@ export function PropertyPanel() {
     // Handle adding metadata
     const handleAddMetadata = useCallback(() => {
         if (selectedNodeId && newMetaKey.trim()) {
-            const currentMeta = selectedNode?.data.metadata || {}
+            const currentMeta = selectedNode?.data.metadata as Record<string, string | number> || {}
             updateNode(selectedNodeId, {
                 metadata: {
                     ...currentMeta,
@@ -82,7 +90,7 @@ export function PropertyPanel() {
     const handleRemoveMetadata = useCallback(
         (key: string) => {
             if (selectedNodeId && selectedNode?.data.metadata) {
-                const { [key]: _, ...rest } = selectedNode.data.metadata
+                const { [key]: _, ...rest } = selectedNode.data.metadata as Record<string, string | number>
                 updateNode(selectedNodeId, { metadata: rest })
             }
         },
@@ -115,6 +123,85 @@ export function PropertyPanel() {
                     <p className="text-xs text-slate-600 text-center mt-1">
                         Click on a node or edge to view and edit its properties
                     </p>
+                </div>
+            </aside>
+        )
+    }
+
+    // Group Node Selected
+    if (selectedNode && selectedNode.type === 'group') {
+        const groupData = selectedNode.data as any
+
+        return (
+            <aside className="h-full glass flex flex-col border-l border-white/5" style={{ width: 320 }}>
+                <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                        <Icons.BoxSelect size={16} className="text-cyan-400" />
+                        Group Properties
+                    </h2>
+                    <button
+                        onClick={() => removeNode(selectedNode.id)}
+                        className="btn-icon text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        title="Delete Group"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    {/* Label */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                            Label
+                        </label>
+                        <input
+                            type="text"
+                            value={groupData.label || ''}
+                            onChange={(e) => updateNode(selectedNode.id, { label: e.target.value })}
+                            className="input-glass"
+                            placeholder="Group Name"
+                        />
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider">
+                            Color
+                        </label>
+                        <div className="grid grid-cols-5 gap-2">
+                            {groupColors.map((color) => (
+                                <button
+                                    key={color.value}
+                                    onClick={() => updateNode(selectedNode.id, { color: color.value })}
+                                    className="relative w-full aspect-square rounded-lg transition-all hover:scale-105"
+                                    style={{
+                                        background: color.color,
+                                        boxShadow: groupData.color === color.value
+                                            ? `0 0 0 3px ${color.color}40, 0 0 15px ${color.color}40`
+                                            : 'none',
+                                        opacity: groupData.color === color.value ? 1 : 0.6,
+                                        border: groupData.color === color.value
+                                            ? '2px solid white'
+                                            : '2px solid transparent',
+                                    }}
+                                    title={color.label}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                            Description
+                        </label>
+                        <textarea
+                            value={groupData.description || ''}
+                            onChange={(e) => updateNode(selectedNode.id, { description: e.target.value })}
+                            className="input-glass min-h-25 resize-none"
+                            placeholder="Add a description for this group..."
+                        />
+                    </div>
                 </div>
             </aside>
         )
@@ -208,7 +295,7 @@ export function PropertyPanel() {
                         </label>
                         <input
                             type="text"
-                            value={selectedEdge.data?.label || ''}
+                            value={(selectedEdge.data?.label as string) || ''}
                             onChange={(e) => updateEdge(selectedEdge.id, { label: e.target.value })}
                             placeholder="Optional connection label..."
                             className="input-glass"
@@ -239,213 +326,170 @@ export function PropertyPanel() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                {/* Icon Selector */}
-                <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
-                        Icon
-                    </label>
-                    <button
-                        onClick={() => setShowIconPicker(!showIconPicker)}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 border border-white/10 hover:border-cyan-400/30 transition-all group"
-                    >
-                        <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center"
-                            style={{
-                                background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(168, 85, 247, 0.2))',
-                                border: '1px solid rgba(34, 211, 238, 0.3)',
-                            }}
-                        >
-                            <CurrentIcon size={24} className="text-cyan-400" />
-                        </div>
-                        <div className="flex-1 text-left">
-                            <span className="text-sm text-white font-medium">{selectedNode!.data.icon}</span>
-                            <p className="text-[10px] text-slate-500">Click to change</p>
-                        </div>
-                        <ChevronDown
-                            size={16}
-                            className={cn(
-                                "text-slate-500 transition-transform",
-                                showIconPicker && "rotate-180"
-                            )}
-                        />
-                    </button>
-
-                    {/* Icon Picker */}
-                    {showIconPicker && (
-                        <div
-                            className="mt-2 max-h-[240px] overflow-y-auto rounded-xl p-3"
-                            style={{
-                                background: 'rgba(15, 23, 42, 0.9)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                            }}
-                        >
-                            {getCategories().map((category) => (
-                                <div key={category} className="mb-3">
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider px-1 mb-2">
-                                        {categoryLabels[category]}
-                                    </p>
-                                    <div className="grid grid-cols-6 gap-1">
-                                        {iconDefinitions
-                                            .filter((i) => i.category === category)
-                                            .map((iconDef) => {
-                                                const IconComp = Icons[iconDef.icon as keyof typeof Icons] as LucideIcon
-                                                if (!IconComp) return null
-                                                const isSelected = selectedNode!.data.icon === iconDef.icon
-                                                return (
-                                                    <button
-                                                        key={iconDef.icon}
-                                                        onClick={() => handleIconChange(iconDef.icon)}
-                                                        className="p-2 rounded-lg transition-all"
-                                                        style={{
-                                                            background: isSelected ? 'rgba(34, 211, 238, 0.2)' : 'transparent',
-                                                            border: isSelected ? '1px solid rgba(34, 211, 238, 0.5)' : '1px solid transparent',
-                                                        }}
-                                                        title={iconDef.name}
-                                                    >
-                                                        <IconComp
-                                                            size={16}
-                                                            className={isSelected ? "text-cyan-400" : "text-slate-400 hover:text-white"}
-                                                        />
-                                                    </button>
-                                                )
-                                            })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Label */}
+                {/* Node Label */}
                 <div>
                     <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
                         Label
                     </label>
                     <input
                         type="text"
-                        value={selectedNode!.data.label}
+                        value={(selectedNode!.data.label as string) || ''}
                         onChange={(e) => updateNode(selectedNode!.id, { label: e.target.value })}
-                        placeholder="Node name..."
-                        className="input-glass text-base font-medium"
+                        className="input-glass"
                     />
                 </div>
 
-                {/* Status */}
+                {/* Node Icon */}
                 <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider">
-                        Status
+                    <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                        Icon
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
-                        {statusOptions.map((status) => {
-                            const isSelected = selectedNode!.data.status === status.value
-                            return (
-                                <button
-                                    key={status.value}
-                                    onClick={() => updateNode(selectedNode!.id, { status: status.value })}
-                                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all"
-                                    style={{
-                                        background: isSelected ? `${status.color}15` : 'rgba(30, 41, 59, 0.5)',
-                                        border: isSelected ? `1px solid ${status.color}50` : '1px solid rgba(255, 255, 255, 0.1)',
-                                    }}
-                                >
-                                    <div
-                                        className="w-2.5 h-2.5 rounded-full"
-                                        style={{
-                                            background: status.color,
-                                            boxShadow: isSelected ? `0 0 8px ${status.color}` : 'none',
-                                        }}
-                                    />
-                                    <span className="text-xs text-slate-300 font-medium">{status.label}</span>
-                                </button>
-                            )
-                        })}
+                    <div className="flex items-center gap-2 relative">
+                        <button
+                            onClick={() => setShowIconPicker(!showIconPicker)}
+                            className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
+                        >
+                            <div className="p-1 rounded bg-cyan-500/10 text-cyan-400">
+                                <CurrentIcon size={18} />
+                            </div>
+                            <span className="text-sm text-slate-300 flex-1 text-left">
+                                {selectedNode!.data.icon as string}
+                            </span>
+                            <ChevronDown size={14} className="text-slate-500" />
+                        </button>
+
+                        {/* Icon Picker Popover */}
+                        {showIconPicker && (
+                            <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-slate-900 border border-white/10 rounded-xl shadow-xl z-50 animate-fade-in max-h-[300px] overflow-hidden flex flex-col">
+                                <div className="flex items-center justify-between mb-2 px-1">
+                                    <span className="text-xs font-medium text-slate-400">Select Icon</span>
+                                    <button
+                                        onClick={() => setShowIconPicker(false)}
+                                        className="p-1 hover:bg-white/10 rounded"
+                                    >
+                                        <X size={12} className="text-slate-400" />
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                    <div className="grid grid-cols-4 gap-1">
+                                        {iconDefinitions.map((iconDef) => {
+                                            const IconComp = Icons[iconDef.icon as keyof typeof Icons] as LucideIcon
+                                            if (!IconComp) return null
+                                            return (
+                                                <button
+                                                    key={iconDef.icon}
+                                                    onClick={() => handleIconChange(iconDef.icon)}
+                                                    className={cn(
+                                                        'p-2 rounded hover:bg-white/10 flex items-center justify-center transition-colors',
+                                                        selectedNode!.data.icon === iconDef.icon && 'bg-cyan-500/20 text-cyan-400'
+                                                    )}
+                                                    title={iconDef.name}
+                                                >
+                                                    <IconComp size={18} />
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Description */}
+                {/* Node Status */}
+                <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                        Status
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {statusOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                onClick={() => updateNode(selectedNode!.id, { status: option.value })}
+                                className={cn(
+                                    'flex items-center gap-2 p-2 rounded-lg border transition-all',
+                                    selectedNode!.data.status === option.value
+                                        ? 'bg-white/10 border-cyan-500/50'
+                                        : 'bg-white/5 border-transparent hover:bg-white/10'
+                                )}
+                            >
+                                <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                        background: option.color,
+                                        boxShadow: `0 0 8px ${option.color}`,
+                                    }}
+                                />
+                                <span className="text-sm text-slate-300">{option.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Node Description */}
                 <div>
                     <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
                         Description
                     </label>
                     <textarea
-                        value={selectedNode!.data.description || ''}
+                        value={(selectedNode!.data.description as string) || ''}
                         onChange={(e) => updateNode(selectedNode!.id, { description: e.target.value })}
-                        placeholder="Add a description for this node..."
-                        rows={3}
-                        className="input-glass resize-none"
+                        className="input-glass min-h-25 resize-none"
+                        placeholder="Add a brief description..."
                     />
                 </div>
 
                 {/* Metadata */}
                 <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-3 uppercase tracking-wider">
-                        Metadata
+                    <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider flex items-center justify-between">
+                        <span>Metadata</span>
+                        <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
+                            {Object.keys(selectedNode!.data.metadata as object || {}).length}
+                        </span>
                     </label>
 
-                    {/* Existing metadata */}
                     <div className="space-y-2 mb-3">
-                        {selectedNode!.data.metadata &&
-                            Object.entries(selectedNode!.data.metadata).map(([key, value]) => (
-                                <div
-                                    key={key}
-                                    className="flex items-center gap-2 p-2.5 rounded-lg"
-                                    style={{
-                                        background: 'rgba(30, 41, 59, 0.5)',
-                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                    }}
-                                >
-                                    <span className="text-xs text-slate-400 flex-1">{key}</span>
-                                    <span
-                                        className="text-xs font-mono px-2 py-0.5 rounded"
-                                        style={{
-                                            color: '#22d3ee',
-                                            background: 'rgba(34, 211, 238, 0.1)',
-                                        }}
-                                    >
+                        {Object.entries(selectedNode!.data.metadata as Record<string, string | number> || {}).map(([key, value]) => (
+                            <div key={key} className="flex items-center gap-2 p-2 rounded bg-white/5 group">
+                                <div className="flex-1 grid grid-cols-2 gap-2 text-sm">
+                                    <span className="font-mono text-cyan-400 truncate" title={key}>
+                                        {key}
+                                    </span>
+                                    <span className="text-slate-300 truncate" title={String(value)}>
                                         {value}
                                     </span>
-                                    <button
-                                        onClick={() => handleRemoveMetadata(key)}
-                                        className="text-slate-500 hover:text-red-400 transition-colors p-1"
-                                    >
-                                        <X size={14} />
-                                    </button>
                                 </div>
-                            ))}
+                                <button
+                                    onClick={() => handleRemoveMetadata(key)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded transition-all"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Add new metadata */}
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                         <input
                             type="text"
                             value={newMetaKey}
                             onChange={(e) => setNewMetaKey(e.target.value)}
                             placeholder="Key"
-                            className="input-glass text-xs flex-1"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleAddMetadata()
-                            }}
+                            className="input-glass flex-1 min-w-0"
                         />
                         <input
                             type="text"
                             value={newMetaValue}
                             onChange={(e) => setNewMetaValue(e.target.value)}
                             placeholder="Value"
-                            className="input-glass text-xs flex-1"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleAddMetadata()
-                            }}
+                            className="input-glass flex-1 min-w-0"
                         />
                         <button
                             onClick={handleAddMetadata}
                             disabled={!newMetaKey.trim()}
-                            className="p-2 rounded-lg transition-all disabled:opacity-30"
-                            style={{
-                                background: newMetaKey.trim() ? 'rgba(34, 211, 238, 0.2)' : 'rgba(30, 41, 59, 0.5)',
-                                border: '1px solid rgba(34, 211, 238, 0.3)',
-                            }}
+                            className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400 disabled:opacity-50 hover:bg-cyan-500/30 transition-colors"
                         >
-                            <Plus size={16} className="text-cyan-400" />
+                            <Plus size={18} />
                         </button>
                     </div>
                 </div>
