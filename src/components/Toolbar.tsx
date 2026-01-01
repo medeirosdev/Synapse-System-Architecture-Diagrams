@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
     Save,
     FolderOpen,
@@ -8,8 +8,10 @@ import {
     Trash2,
     Sparkles,
     Keyboard,
+    LayoutTemplate,
 } from 'lucide-react'
 import { useSynapseStore, useTemporalStore } from '../store/useSynapseStore'
+import { TemplatesModal } from './TemplatesModal'
 import { exportToFile, importFromFile, clearIndexedDB } from '../lib/persistence'
 import { cn } from '../lib/utils'
 
@@ -19,6 +21,7 @@ export function Toolbar() {
     const viewport = useSynapseStore((state) => state.viewport)
     const loadState = useSynapseStore((state) => state.loadState)
     const clearAll = useSynapseStore((state) => state.clearAll)
+    const [isTemplatesOpen, setIsTemplatesOpen] = useState(false)
 
     const { undo, redo, pastStates, futureStates } = useTemporalStore()
 
@@ -150,6 +153,15 @@ export function Toolbar() {
 
                 <div className="w-px h-6 bg-white/10 mx-2" />
 
+                {/* Templates */}
+                <button
+                    onClick={() => setIsTemplatesOpen(true)}
+                    className="btn-icon"
+                    title="Templates"
+                >
+                    <LayoutTemplate size={18} />
+                </button>
+
                 {/* File Operations */}
                 <button
                     onClick={handleImport}
@@ -175,6 +187,8 @@ export function Toolbar() {
 
                 <div className="w-px h-6 bg-white/10 mx-2" />
 
+
+
                 {/* Clear */}
                 <button
                     onClick={handleClear}
@@ -190,6 +204,8 @@ export function Toolbar() {
                     <span className="text-[10px]">Ctrl+S save</span>
                 </div>
             </div>
+
+            <TemplatesModal isOpen={isTemplatesOpen} onClose={() => setIsTemplatesOpen(false)} />
         </header>
     )
 }
