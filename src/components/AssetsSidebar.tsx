@@ -52,10 +52,12 @@ export function AssetsSidebar() {
 
     // Handle drag start
     const handleDragStart = useCallback(
-        (event: React.DragEvent, icon: IconDefinition) => {
+        (event: React.DragEvent, icon: IconDefinition | { name: string; type: 'group' }) => {
+            const isGroup = 'type' in icon && icon.type === 'group'
             const dragData: DragData = {
-                icon: icon.icon,
+                icon: isGroup ? 'Box' : (icon as IconDefinition).icon,
                 label: icon.name,
+                type: isGroup ? 'group' : 'service',
             }
             event.dataTransfer.setData('application/synapse', JSON.stringify(dragData))
             event.dataTransfer.effectAllowed = 'move'
@@ -73,7 +75,7 @@ export function AssetsSidebar() {
     return (
         <aside
             className="h-full glass flex flex-col border-r border-white/5"
-            style={{ width: 280 }}
+            style={{ width: 300 }}
         >
             {/* Header */}
             <div className="p-4 border-b border-white/5">
@@ -109,7 +111,28 @@ export function AssetsSidebar() {
             </div>
 
             {/* Icon List */}
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                {/* Groups Section */}
+                <div className="mb-4">
+                    <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        Containers
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 px-2">
+                        <div
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, { name: 'Group', type: 'group' })}
+                            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-cyan-500/30 cursor-grab active:cursor-grabbing transition-all group"
+                        >
+                            <div className="p-1.5 rounded-md bg-white/5 group-hover:bg-cyan-500/20 text-slate-400 group-hover:text-cyan-400 transition-colors">
+                                <Icons.BoxSelect size={20} />
+                            </div>
+                            <span className="text-[10px] font-medium text-slate-400 group-hover:text-cyan-100 text-center leading-tight">
+                                Group
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 {getCategories().map((category) => {
                     const icons = iconsByCategory.get(category)
                     if (!icons || icons.length === 0) return null
@@ -136,7 +159,7 @@ export function AssetsSidebar() {
 
                             {/* Icons Grid */}
                             {isExpanded && (
-                                <div className="grid grid-cols-4 gap-1 mt-1 ml-4">
+                                <div className="grid grid-cols-3 gap-2 mt-2 px-2">
                                     {icons.map((iconDef) => {
                                         const IconComponent = Icons[iconDef.icon as keyof typeof Icons] as LucideIcon
                                         if (!IconComponent) return null
@@ -147,21 +170,19 @@ export function AssetsSidebar() {
                                                 draggable
                                                 onDragStart={(e) => handleDragStart(e, iconDef)}
                                                 className={cn(
-                                                    'group relative aspect-square flex flex-col items-center justify-center',
+                                                    'group flex flex-col items-center gap-1.5 p-2',
                                                     'rounded-lg cursor-grab active:cursor-grabbing',
-                                                    'hover:bg-cyan-500/10 transition-all duration-150',
+                                                    'hover:bg-white/5 transition-all duration-150',
                                                     'border border-transparent hover:border-cyan-500/30'
                                                 )}
                                                 title={`Drag to add ${iconDef.name}`}
                                             >
-                                                <IconComponent
-                                                    size={20}
-                                                    className="text-slate-400 group-hover:text-cyan-400 transition-colors"
-                                                />
-                                                <GripVertical
-                                                    size={10}
-                                                    className="absolute bottom-0.5 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                />
+                                                <div className="p-1.5 rounded-md bg-white/5 group-hover:bg-cyan-500/20 text-slate-400 group-hover:text-cyan-400 transition-colors">
+                                                    <IconComponent size={20} />
+                                                </div>
+                                                <span className="text-[10px] font-medium text-slate-400 group-hover:text-cyan-100 text-center leading-tight line-clamp-2 w-full">
+                                                    {iconDef.name}
+                                                </span>
                                             </div>
                                         )
                                     })}
