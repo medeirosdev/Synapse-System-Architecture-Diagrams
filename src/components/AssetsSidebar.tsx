@@ -54,10 +54,13 @@ export function AssetsSidebar() {
     const handleDragStart = useCallback(
         (event: React.DragEvent, icon: IconDefinition | { name: string; type: 'group' }) => {
             const isGroup = 'type' in icon && icon.type === 'group'
+            const isTemplate = 'category' in icon && icon.category === 'templates'
+
             const dragData: DragData = {
                 icon: isGroup ? 'Box' : (icon as IconDefinition).icon,
                 label: icon.name,
-                type: isGroup ? 'group' : 'service',
+                type: isGroup ? 'group' : isTemplate ? 'template' : 'service',
+                templateId: (icon as IconDefinition).templateId
             }
             event.dataTransfer.setData('application/synapse', JSON.stringify(dragData))
             event.dataTransfer.effectAllowed = 'move'

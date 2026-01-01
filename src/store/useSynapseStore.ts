@@ -168,6 +168,24 @@ export const useSynapseStore = create<SynapseState>()(
                 // ============================================
 
                 /**
+                 * Add a single edge.
+                 */
+                addEdge: (edge: SynapseEdge) => {
+                    set((state) => ({
+                        edges: addEdge(edge, state.edges) as SynapseEdge[],
+                    }))
+                },
+
+                /**
+                 * Add multiple edges at once.
+                 */
+                addEdges: (edges: SynapseEdge[]) => {
+                    set((state) => ({
+                        edges: [...state.edges, ...edges],
+                    }))
+                },
+
+                /**
                  * Update an existing edge's data.
                  * Merges the provided data with existing data.
                  */

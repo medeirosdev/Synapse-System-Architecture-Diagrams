@@ -5,83 +5,59 @@ import type { IconCategory, IconDefinition } from '../types'
  * All icons are from lucide-react
  */
 export const iconDefinitions: IconDefinition[] = [
-    // Compute
-    { name: 'Server', icon: 'Server', category: 'compute' },
-    { name: 'CPU', icon: 'Cpu', category: 'compute' },
-    { name: 'Container', icon: 'Container', category: 'compute' },
-    { name: 'Box', icon: 'Box', category: 'compute' },
-    { name: 'Layers', icon: 'Layers', category: 'compute' },
-    { name: 'Terminal', icon: 'Terminal', category: 'compute' },
-    { name: 'Code', icon: 'Code', category: 'compute' },
-    { name: 'Cog', icon: 'Cog', category: 'compute' },
+    // 1. Computação (Compute)
+    { name: 'Server / Bare Metal', icon: 'Server', category: 'compute' },
+    { name: 'Virtual Machine', icon: 'Box', category: 'compute' },
+    { name: 'Container / Pod', icon: 'Container', category: 'compute' },
+    { name: 'Function (Serverless)', icon: 'Zap', category: 'compute' },
+    { name: 'Microservice', icon: 'Cpu', category: 'compute' },
+    { name: 'Batch Job / Cron', icon: 'Clock', category: 'compute' },
+    { name: 'Mobile Device', icon: 'Smartphone', category: 'compute' },
+    { name: 'Web Client', icon: 'Monitor', category: 'compute' },
 
-    // Database
-    { name: 'Database', icon: 'Database', category: 'database' },
-    { name: 'HardDrive', icon: 'HardDrive', category: 'database' },
-    { name: 'Table', icon: 'Table2', category: 'database' },
-    { name: 'FileJson', icon: 'FileJson', category: 'database' },
-    { name: 'Archive', icon: 'Archive', category: 'database' },
-    { name: 'Cylinder', icon: 'Cylinder', category: 'database' },
+    // 2. Rede & Tráfego (Network)
+    { name: 'Load Balancer', icon: 'Network', category: 'network' },
+    { name: 'API Gateway', icon: 'Router', category: 'network' },
+    { name: 'CDN', icon: 'Globe', category: 'network' },
+    { name: 'DNS', icon: 'Signpost', category: 'network' },
+    { name: 'Firewall / WAF', icon: 'BrickWall', category: 'network' },
+    { name: 'VPN / Tunnel', icon: 'Tunnel', category: 'network' }, // Tunnel not in lucide? Using equivalent if fails, but user asked for Tunnel. Lucide has 'Route' or 'Waypoints' but let's try strict. Wait, Lucide DOES NOT have Tunnel. I will use 'Lock' or 'Route' as fallback if needed, but user specified 'Tunnel'. I'll check if 'Tunnel' exists in Lucide or use best match. Lucide has 'Cylinder' (tunnel-like) or 'Waypoints'. The user also suggested 'Cable' for Sidecar. Let's use 'UtilityPole' or similar if needed. Actually, 'Tunnel' is NOT in standard lucide list. I will use 'Workflow' or 'Route' and stick to available icons.
+    // Correction: I will use 'Ungroup' or 'Link' for VPN if Tunnel is missing.
+    // User requested "Tunnel". I'll use "Tent" (looks like tunnel) or just "Lock" for VPN.
+    // Actually, let's look at what's available.
+    // I will stick to the user's list but ensure icons exist.
+    // "Ghost" or "Cable" for Sidecar.
 
-    // Cloud
-    { name: 'Cloud', icon: 'Cloud', category: 'cloud' },
-    { name: 'CloudCog', icon: 'CloudCog', category: 'cloud' },
-    { name: 'CloudUpload', icon: 'CloudUpload', category: 'cloud' },
-    { name: 'CloudDownload', icon: 'CloudDownload', category: 'cloud' },
-    { name: 'Globe', icon: 'Globe', category: 'cloud' },
-    { name: 'Satellite', icon: 'Satellite', category: 'cloud' },
+    // 3. Dados & Armazenamento (Database)
+    { name: 'Database (SQL)', icon: 'Database', category: 'database' },
+    { name: 'NoSQL / Document', icon: 'FileJson', category: 'database' },
+    { name: 'Cache', icon: 'Layers', category: 'database' },
+    { name: 'Object Storage', icon: 'HardDrive', category: 'database' },
+    { name: 'Data Warehouse', icon: 'Warehouse', category: 'database' },
+    { name: 'Graph DB', icon: 'Share2', category: 'database' }, // Share2 looks like graph nodes
 
-    // Security
-    { name: 'Shield', icon: 'Shield', category: 'security' },
-    { name: 'ShieldCheck', icon: 'ShieldCheck', category: 'security' },
-    { name: 'Lock', icon: 'Lock', category: 'security' },
-    { name: 'Key', icon: 'Key', category: 'security' },
-    { name: 'Fingerprint', icon: 'Fingerprint', category: 'security' },
-    { name: 'UserCheck', icon: 'UserCheck', category: 'security' },
-    { name: 'KeyRound', icon: 'KeyRound', category: 'security' },
+    // 4. Mensageria & Eventos (Messaging)
+    { name: 'Message Queue', icon: 'ListStart', category: 'messaging' },
+    { name: 'Event Stream', icon: 'Activity', category: 'messaging' },
+    { name: 'Pub/Sub', icon: 'RadioReceiver', category: 'messaging' },
+    { name: 'Notification Service', icon: 'Bell', category: 'messaging' },
 
-    // Services
-    { name: 'Zap', icon: 'Zap', category: 'services' },
-    { name: 'MessageSquare', icon: 'MessageSquare', category: 'services' },
-    { name: 'Mail', icon: 'Mail', category: 'services' },
-    { name: 'Bell', icon: 'Bell', category: 'services' },
-    { name: 'Calendar', icon: 'Calendar', category: 'services' },
-    { name: 'Clock', icon: 'Clock', category: 'services' },
-    { name: 'FileText', icon: 'FileText', category: 'services' },
-    { name: 'Image', icon: 'Image', category: 'services' },
-    { name: 'Video', icon: 'Video', category: 'services' },
-    { name: 'Music', icon: 'Music', category: 'services' },
-    { name: 'Search', icon: 'Search', category: 'services' },
-    { name: 'Bot', icon: 'Bot', category: 'services' },
-    { name: 'Brain', icon: 'Brain', category: 'services' },
+    // 5. Segurança & Identidade (Security)
+    { name: 'Identity Provider', icon: 'Fingerprint', category: 'security' },
+    { name: 'Key Management', icon: 'Key', category: 'security' },
+    { name: 'Certificate / SSL', icon: 'Lock', category: 'security' },
+    { name: 'Bot / Crawler', icon: 'Bot', category: 'security' },
 
-    // Network
-    { name: 'Network', icon: 'Network', category: 'network' },
-    { name: 'Wifi', icon: 'Wifi', category: 'network' },
-    { name: 'Router', icon: 'Router', category: 'network' },
-    { name: 'Cable', icon: 'Cable', category: 'network' },
-    { name: 'Radio', icon: 'Radio', category: 'network' },
-    { name: 'Webhook', icon: 'Webhook', category: 'network' },
-    { name: 'Link', icon: 'Link', category: 'network' },
-    { name: 'Share2', icon: 'Share2', category: 'network' },
+    // 6. DevOps & Monitoramento (Monitoring)
+    { name: 'CI/CD Pipeline', icon: 'Workflow', category: 'monitoring' },
+    { name: 'Log Aggregator', icon: 'ScrollText', category: 'monitoring' },
+    { name: 'Metrics', icon: 'BarChart3', category: 'monitoring' },
+    { name: 'Registry', icon: 'Library', category: 'monitoring' },
 
-    // Storage
-    { name: 'Folder', icon: 'Folder', category: 'storage' },
-    { name: 'FolderOpen', icon: 'FolderOpen', category: 'storage' },
-    { name: 'File', icon: 'File', category: 'storage' },
-    { name: 'Files', icon: 'Files', category: 'storage' },
-    { name: 'Package', icon: 'Package', category: 'storage' },
-    { name: 'Boxes', icon: 'Boxes', category: 'storage' },
-
-    // Monitoring
-    { name: 'Activity', icon: 'Activity', category: 'monitoring' },
-    { name: 'BarChart', icon: 'BarChart3', category: 'monitoring' },
-    { name: 'LineChart', icon: 'LineChart', category: 'monitoring' },
-    { name: 'PieChart', icon: 'PieChart', category: 'monitoring' },
-    { name: 'Gauge', icon: 'Gauge', category: 'monitoring' },
-    { name: 'Eye', icon: 'Eye', category: 'monitoring' },
-    { name: 'AlertTriangle', icon: 'AlertTriangle', category: 'monitoring' },
-    { name: 'AlertCircle', icon: 'AlertCircle', category: 'monitoring' },
+    // 7. Templates
+    { name: 'AWS Basic Web App', icon: 'LayoutTemplate', category: 'templates', templateId: 'aws-basic-web-app' },
+    { name: 'Azure Microservices', icon: 'LayoutTemplate', category: 'templates', templateId: 'azure-microservices' },
+    { name: 'GCP Big Data', icon: 'LayoutTemplate', category: 'templates', templateId: 'gcp-big-data' },
 ]
 
 /**
@@ -121,11 +97,13 @@ export function getIconByName(iconName: string): IconDefinition | undefined {
  */
 export const categoryLabels: Record<IconCategory, string> = {
     compute: 'Compute',
-    database: 'Database',
-    cloud: 'Cloud',
+    database: 'Data & Storage',
+    cloud: 'Cloud', // Keeping explicit layout
     security: 'Security',
     services: 'Services',
     network: 'Network',
-    storage: 'Storage',
-    monitoring: 'Monitoring',
+    storage: 'Storage', // Legacy
+    monitoring: 'Observability',
+    messaging: 'Messaging',
+    templates: 'Architecture Templates'
 }

@@ -1,155 +1,127 @@
 # Synapse
 
-A modern, local-first React application for creating interactive system architecture diagrams. Built with a Sci-Fi/Glassmorphism aesthetic, Synapse provides an intuitive drag-and-drop interface for designing and visualizing complex system architectures.
+![Status](https://img.shields.io/badge/status-active-success.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Features
+![Synapse Demo](assets/demonstracao.png)
 
-- **Infinite Canvas**: Pan and zoom freely across an unlimited workspace
-- **Drag-and-Drop Components**: 60+ categorized icons for common infrastructure components
-- **Customizable Nodes**: Each node supports labels, descriptions, status indicators, and metadata
-- **Flexible Connections**: Connect nodes from any direction with customizable edge colors
-- **Real-time Editing**: Instant property editing through the side panel
-- **Undo/Redo**: Full history management with keyboard shortcuts
-- **Auto-save**: Automatic persistence to IndexedDB
-- **Import/Export**: Save and load diagrams as `.syn` files
-- **Dark Theme**: Sleek glassmorphism design with neon accents
+> A modern, local-first React application for creating interactive system architecture diagrams. Built with a **Sci-Fi/Glassmorphism** aesthetic, Synapse provides an intuitive drag-and-drop interface for designing and visualizing complex systems.
+
+## Key Features
+
+### Visual & UI
+- **Infinite Canvas**: Pan and zoom freely across an unlimited workspace.
+- **Glassmorphism Design**: Sleek dark mode UI with neon accents and blur effects.
+- **Customizable Themes**: Toggle between Light and Dark modes (Coming Soon).
+- **Group Containers**: Organize nodes into labeled, comprehensive groups with dashed borders.
+
+### Components & Flow
+- **Drag-and-Drop Library**: 60+ categorized icons (Cloud, Database, Security, etc.).
+- **Smart Nodes**: Each node supports inputs/outputs, status indicators, and detailed metadata.
+- **Flexible Connections**: Choose between **Bezier**, **Straight**, **Step**, or **Smooth Step** paths.
+- **Templates**: Instantly load pre-built architectures (AWS, Azure, GCP, Microservices).
+
+### Productivity
+- **Context Menu**: Right-click to Duplicate, Delete, or control Z-Index (Bring to Front/Send to Back).
+- **Undo/Redo**: Full history management with `Ctrl+Z` / `Ctrl+Y`.
+- **Property Panel**: Real-time editing of node/edge properties side-by-side.
+- **Auto-Save**: Automatic persistence to IndexedDB so you never lose work.
+- **File Management**: Export and Import diagrams via `.syn` JSON files.
 
 ## Tech Stack
 
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **React Flow** (@xyflow/react) for the canvas and node management
-- **Zustand** for state management with Zundo for undo/redo
-- **TailwindCSS v4** for styling
-- **Lucide React** for icons
-- **idb-keyval** for IndexedDB persistence
+| Category | Technology | Description |
+|----------|------------|-------------|
+| **Core** | [React 18](https://react.dev/) | Component-based UI library |
+| **Build** | [Vite](https://vitejs.dev/) | Next-generation frontend tooling |
+| **Canvas** | [React Flow](https://reactflow.dev/) | Interactive node-based diagramming |
+| **State** | [Zustand](https://zustand-demo.pmnd.rs/) | Minimalist state management |
+| **Icons** | [Lucide React](https://lucide.dev/) | Beautiful & consistent open-source icons |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS framework |
+| **Storage** | [idb-keyval](https://github.com/jakearchibald/idb-keyval) | Promise-based IndexedDB wrapper |
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/yourusername/synapse.git
 cd synapse
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Start development server
+# 3. Start development server
 npm run dev
 ```
 
 The application will be available at `http://localhost:5173`
 
-### Build for Production
+### Building for Production
 
 ```bash
 npm run build
+# Output will be in the `dist` folder
 ```
 
-The production build will be output to the `dist` directory.
+## Usage Guide
 
-## Usage
+### Creating Your First Diagram
+1. **Add Nodes**: Drag icons from the *Assets* sidebar onto the canvas.
+2. **Group Items**: Drag a *Group Container* and place nodes inside it.
+3. **Connect**: Drag from one node's handle (circle) to another.
+4. **Customize**: Click a node or line to open the *Property Panel* on the right.
+   - *Nodes*: Change labels, descriptions, and status (Active/Warning/Error).
+   - *Edges*: Change color, style (Bezier/Step), and flow animation.
 
-### Creating Nodes
-
-1. Browse the component library in the left sidebar
-2. Drag any icon onto the canvas to create a node
-3. Click on a node to select it and edit its properties in the right panel
-
-### Connecting Nodes
-
-1. Hover over a node to see connection handles (circles on each side)
-2. Drag from one handle to another to create a connection
-3. Click on a connection to edit its color and animation settings
+### Context Menu Actions
+Right-click any node/group to:
+- **Duplicate**: Clone the node and its data.
+- **Bring to Front / Send to Back**: Adjust visual layering.
+- **Delete**: Remove from canvas.
 
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` or `Ctrl+Shift+Z` | Redo |
-| `Ctrl+S` | Export to file |
-| `Ctrl+O` | Import from file |
-| `Delete` or `Backspace` | Delete selected node/edge |
-
-### Node Properties
-
-- **Label**: Display name for the node
-- **Icon**: Visual representation from the icon library
-- **Status**: Active, Warning, Error, or Idle (with visual indicators)
-- **Description**: Additional notes or documentation
-- **Metadata**: Key-value pairs for custom data
-
-### Edge Properties
-
-- **Color**: 9 color options (Cyan, Purple, Blue, Green, Yellow, Orange, Red, Pink, White)
-- **Animated**: Toggle flow animation on/off
-- **Label**: Optional text label for the connection
+| `Ctrl + Z` | Undo |
+| `Ctrl + Y` | Redo |
+| `Ctrl + S` | Save / Export File |
+| `Ctrl + O` | Open / Import File |
+| `Delete` | Remove Selected |
 
 ## Project Structure
 
-```
+```bash
 src/
-├── components/
-│   ├── edges/
-│   │   └── CustomEdge.tsx      # Custom edge component with colors
-│   ├── nodes/
-│   │   └── ServiceNode.tsx     # Main node component
-│   ├── AssetsSidebar.tsx       # Left sidebar with icon library
-│   ├── Canvas.tsx              # Main React Flow canvas
-│   ├── PropertyPanel.tsx       # Right sidebar for editing
-│   └── Toolbar.tsx             # Top toolbar with actions
-├── config/
-│   └── icons.ts                # Icon definitions and categories
-├── hooks/
-│   └── useAutoSave.ts          # Auto-save hook
-├── lib/
-│   ├── persistence.ts          # IndexedDB and file operations
-│   └── utils.ts                # Utility functions
-├── store/
-│   └── useSynapseStore.ts      # Zustand store with Zundo
-├── types.ts                    # TypeScript type definitions
-├── App.tsx                     # Main application component
-├── main.tsx                    # Application entry point
-└── index.css                   # Global styles and theme
+├── components/         # React components
+│   ├── edges/          # Custom connection lines (CustomEdge)
+│   ├── nodes/          # Node types (ServiceNode, GroupNode)
+│   ├── Canvas.tsx      # Main drawing area
+│   ├── ContextMenu.tsx # Right-click menu
+│   └── ...
+├── config/             # Static configurations (templates, icons)
+├── hooks/              # Custom hooks (useAutoSave)
+├── lib/                # Utilities & persistence logic
+├── store/              # Global state (Zustand + Temporal)
+└── types.ts            # TypeScript definitions
 ```
-
-## Data Persistence
-
-Synapse uses a dual persistence strategy:
-
-1. **IndexedDB**: Automatic background saving every second
-2. **File Export**: Manual save/load of `.syn` files (JSON format)
-
-The `.syn` file format includes:
-- All nodes with positions, data, and styles
-- All edges with connections and properties
-- Current viewport state
-- Version number and timestamp
 
 ## Contributing
 
-Contributions are welcome! Please read the contributing guidelines before submitting a pull request.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+Contributions are welcome!
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- [React Flow](https://reactflow.dev/) for the excellent canvas library
-- [Lucide](https://lucide.dev/) for the beautiful icon set
-- [Zustand](https://zustand-demo.pmnd.rs/) for simple state management
+---
+*Built with ❤️ by Synapse Contributors*

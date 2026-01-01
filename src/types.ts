@@ -114,6 +114,8 @@ export type IconCategory =
     | 'network'
     | 'storage'
     | 'monitoring'
+    | 'messaging'
+    | 'templates'
 
 /**
  * Definition for an icon in the asset library.
@@ -125,6 +127,8 @@ export interface IconDefinition {
     icon: string
     /** Category for grouping */
     category: IconCategory
+    /** Optional template ID if this items represents a full architecture */
+    templateId?: string
 }
 
 // ============================================
@@ -154,6 +158,8 @@ export interface SynapseState {
     sendToBack: (id: string) => void
 
     // Actions - Edges
+    addEdge: (edge: SynapseEdge) => void
+    addEdges: (edges: SynapseEdge[]) => void
     updateEdge: (id: string, data: Partial<SynapseEdgeData>) => void
     removeEdge: (id: string) => void
 
@@ -202,5 +208,7 @@ export interface DragData {
     /** Default label for the new node */
     label: string
     /** Node type (service or group) */
-    type?: 'service' | 'group'
+    type?: 'service' | 'group' | 'template'
+    /** Template ID if type is template */
+    templateId?: string
 }

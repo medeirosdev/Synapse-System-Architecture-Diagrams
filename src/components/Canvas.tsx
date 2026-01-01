@@ -131,6 +131,50 @@ export function Canvas() {
                 }
                 addNode(newGroup as any)
                 setSelectedNodeId(newGroup.id)
+            } else if (dragData.type === 'template' && dragData.templateId) {
+                // Import templates dynamically to avoid circular dependencies if any
+                import('../config/templates').then(({ templates }) => {
+                    const template = templates.find(t => t.id === dragData.templateId)
+
+                    if (template) {
+                        const { nodes: tmplNodes, edges: tmplEdges } = template.data
+
+                        // Find bounds to center/offset
+                        const minX = Math.min(...tmplNodes.map(n => n.position.x))
+                        const minY = Math.min(...tmplNodes.map(n => n.position.y))
+
+                        const offsetX = snappedPosition.x - minX
+                        const offsetY = snappedPosition.y - minY
+
+                        const idMap = new Map<string, string>()
+                        tmplNodes.forEach(n => idMap.set(n.id, generateId()))
+
+                        const newNodes = tmplNodes.map(node => ({
+                            ...node,
+                            id: idMap.get(node.id)!,
+                            position: {
+                                x: node.position.x + offsetX,
+                                y: node.position.y + offsetY
+                            },
+                            // Ensure data structure is correct
+                            data: { ...node.data }
+                        }))
+
+                        const newEdges = tmplEdges.map(edge => ({
+                            ...edge,
+                            id: generateId(),
+                            source: idMap.get(edge.source) || edge.source,
+                            target: idMap.get(edge.target) || edge.target
+                        }))
+
+                        // Batch add nodes
+                        newNodes.forEach(n => addNode(n as any))
+
+                        // Batch add edges
+                        const addEdges = useSynapseStore.getState().addEdges
+                        addEdges(newEdges as any)
+                    }
+                })
             } else {
                 const newNode: ServiceNodeType = {
                     id: generateId(),
