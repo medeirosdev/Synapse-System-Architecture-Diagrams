@@ -14,7 +14,7 @@ import {
     addEdge,
     type Viewport,
 } from '@xyflow/react'
-import type { SynapseState, ServiceNode, SynapseEdge, ServiceNodeData, SynapseEdgeData } from '../types'
+import type { SynapseState, ServiceNode, GroupNode, SynapseEdge, ServiceNodeData, SynapseEdgeData } from '../types'
 import { generateId } from '../lib/utils'
 
 /** Default viewport state - centered with 100% zoom */
@@ -59,9 +59,19 @@ export const useSynapseStore = create<SynapseState>()(
                 /**
                  * Add a new node to the canvas.
                  */
-                addNode: (node: ServiceNode) => {
+                addNode: (node: ServiceNode | GroupNode) => {
+                    const isGroup = node.type === 'group'
+                    // Groups go to back (-1), others to front (default or 10)
+                    const nodeWithZ = {
+                        ...node,
+                        zIndex: isGroup ? -1 : 10,
+                    }
+
                     set((state) => ({
-                        nodes: [...state.nodes, node],
+                        // If group, prepend to array (render first). If service, append (render last).
+                        nodes: isGroup
+                            ? [nodeWithZ, ...state.nodes]
+                            : [...state.nodes, nodeWithZ],
                     }))
                 },
 
@@ -69,11 +79,11 @@ export const useSynapseStore = create<SynapseState>()(
                  * Update an existing node's data.
                  * Merges the provided data with existing data.
                  */
-                updateNode: (id: string, data: Partial<ServiceNodeData>) => {
+                updateNode: (id: string, data: Record<string, any>) => {
                     set((state) => ({
                         nodes: state.nodes.map((node) =>
                             node.id === id
-                                ? { ...node, data: { ...node.data, ...data } }
+                                ? ({ ...node, data: { ...node.data, ...data } } as any)
                                 : node
                         ),
                     }))
@@ -198,11 +208,24 @@ export const useSynapseStore = create<SynapseState>()(
                 /**
                  * Load a complete state (from file or IndexedDB).
                  */
-                loadState: (state: { nodes: ServiceNode[]; edges: SynapseEdge[]; viewport: Viewport }) => {
+                loadState: (state: { nodes: (ServiceNode | GroupNode)[]; edges: SynapseEdge[]; viewport: Viewport }) => {
+                    // Process nodes to ensure correct z-index
+                    const processedNodes = (state.nodes || []).map(node => ({
+                        ...node,
+                        zIndex: node.type === 'group' ? -1 : 10
+                    })).sort((a, b) => {
+                        // Ensure groups are first in the array as a fallback
+                        if (a.type === 'group' && b.type !== 'group') return -1
+                        if (a.type !== 'group' && b.type === 'group') return 1
+                        return 0
+                    })
+
                     set({
-                        nodes: state.nodes,
-                        edges: state.edges,
-                        viewport: state.viewport,
+                        nodes: processedNodes,
+                        edges: state.edges || [],
+                        viewport: state.viewport || initialViewport,
+                        selectedNodeId: null,
+                        selectedEdgeId: null,
                     })
                 },
 
