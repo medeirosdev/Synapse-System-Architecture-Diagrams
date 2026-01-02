@@ -6,7 +6,6 @@ import {
     Redo2,
     Download,
     Trash2,
-    Sparkles,
     Keyboard,
     LayoutTemplate,
 } from 'lucide-react'
@@ -87,21 +86,8 @@ export function Toolbar() {
     return (
         <header className="h-14 glass border-b border-white/5 flex items-center justify-between px-4">
             {/* Left - Branding */}
-            <div className="flex items-center gap-3">
-                <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{
-                        background: 'linear-gradient(135deg, #22d3ee, #a855f7)',
-                        boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)',
-                    }}
-                >
-                    <Sparkles size={20} className="text-white" />
-                </div>
-                <div>
-                    <h1 className="text-base font-bold text-white tracking-wide">Synapse</h1>
-                    <p className="text-[10px] text-slate-500 -mt-0.5">Architecture Designer</p>
-                </div>
-            </div>
+            {/* Left - Branding Removed */}
+            <div />
 
             {/* Center - Stats */}
             <div className="hidden md:flex items-center gap-6 text-sm">
