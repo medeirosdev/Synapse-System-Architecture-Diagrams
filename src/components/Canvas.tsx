@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import {
     ReactFlow,
     Background,
@@ -13,10 +13,11 @@ import { useSynapseStore } from '../store/useSynapseStore'
 import { ServiceNode } from './nodes/ServiceNode'
 import { GroupNode } from './nodes/GroupNode'
 import { CustomEdge } from './edges/CustomEdge'
-import type { ServiceNode as ServiceNodeType, GroupNode as GroupNodeType, DragData } from '../types'
-import { generateId } from '../lib/utils'
+import type { ServiceNode as ServiceNodeType } from '../types'
 import { MousePointer2, Move3D } from 'lucide-react'
 import { ContextMenu } from './ContextMenu'
+import { useCanvasDrop } from '../hooks/useCanvasDrop'
+import { useContextMenu } from '../hooks/useContextMenu'
 
 const nodeTypes = {
     service: ServiceNode,
@@ -44,157 +45,12 @@ export function Canvas() {
     const onEdgesChange = useSynapseStore((state) => state.onEdgesChange)
     const onConnect = useSynapseStore((state) => state.onConnect)
     const onViewportChange = useSynapseStore((state) => state.onViewportChange)
-    const addNode = useSynapseStore((state) => state.addNode)
     const setSelectedNodeId = useSynapseStore((state) => state.setSelectedNodeId)
     const setSelectedEdgeId = useSynapseStore((state) => state.setSelectedEdgeId)
 
-    // Context Menu State
-    const [menu, setMenu] = useState<{
-        visible: boolean
-        x: number
-        y: number
-        targetId: string | null
-        type: 'node' | 'pane' | null
-    } | null>(null)
-
-    const onNodeContextMenu = useCallback(
-        (event: React.MouseEvent, node: ServiceNodeType | GroupNodeType) => {
-            event.preventDefault()
-            setMenu({
-                visible: true,
-                x: event.clientX,
-                y: event.clientY,
-                targetId: node.id,
-                type: 'node',
-            })
-        },
-        []
-    )
-
-    const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
-        event.preventDefault()
-        setMenu({
-            visible: true,
-            x: (event as React.MouseEvent).clientX,
-            y: (event as React.MouseEvent).clientY,
-            targetId: null,
-            type: 'pane',
-        })
-    }, [])
-
-    const closeMenu = useCallback(() => setMenu(null), [])
-
-    // Handle drag over
-    const onDragOver = useCallback((event: React.DragEvent) => {
-        event.preventDefault()
-        event.dataTransfer.dropEffect = 'move'
-    }, [])
-
-    // Handle drop - create new node
-    const onDrop = useCallback(
-        (event: React.DragEvent) => {
-            event.preventDefault()
-
-            const data = event.dataTransfer.getData('application/synapse')
-            if (!data) return
-
-            const dragData: DragData = JSON.parse(data)
-
-            // Get the bounding rect of the wrapper
-            const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect()
-            if (!reactFlowBounds) return
-
-            // Calculate position considering viewport
-            const position = {
-                x: (event.clientX - reactFlowBounds.left - viewport.x) / viewport.zoom,
-                y: (event.clientY - reactFlowBounds.top - viewport.y) / viewport.zoom,
-            }
-
-            // Snap to grid (16px)
-            const snappedPosition = {
-                x: Math.round(position.x / 16) * 16,
-                y: Math.round(position.y / 16) * 16,
-            }
-
-            // Check if it's a group node
-            if (dragData.type === 'group') {
-                const newGroup: GroupNodeType = {
-                    id: generateId(),
-                    type: 'group',
-                    position: snappedPosition,
-                    style: { width: 400, height: 300 },
-                    data: {
-                        label: dragData.label,
-                        color: 'cyan',
-                        description: '',
-                    },
-                }
-                addNode(newGroup as any)
-                setSelectedNodeId(newGroup.id)
-            } else if (dragData.type === 'template' && dragData.templateId) {
-                // Import templates dynamically to avoid circular dependencies if any
-                import('../config/templates').then(({ templates }) => {
-                    const template = templates.find(t => t.id === dragData.templateId)
-
-                    if (template) {
-                        const { nodes: tmplNodes, edges: tmplEdges } = template.data
-
-                        // Find bounds to center/offset
-                        const minX = Math.min(...tmplNodes.map(n => n.position.x))
-                        const minY = Math.min(...tmplNodes.map(n => n.position.y))
-
-                        const offsetX = snappedPosition.x - minX
-                        const offsetY = snappedPosition.y - minY
-
-                        const idMap = new Map<string, string>()
-                        tmplNodes.forEach(n => idMap.set(n.id, generateId()))
-
-                        const newNodes = tmplNodes.map(node => ({
-                            ...node,
-                            id: idMap.get(node.id)!,
-                            position: {
-                                x: node.position.x + offsetX,
-                                y: node.position.y + offsetY
-                            },
-                            // Ensure data structure is correct
-                            data: { ...node.data }
-                        }))
-
-                        const newEdges = tmplEdges.map(edge => ({
-                            ...edge,
-                            id: generateId(),
-                            source: idMap.get(edge.source) || edge.source,
-                            target: idMap.get(edge.target) || edge.target
-                        }))
-
-                        // Batch add nodes
-                        newNodes.forEach(n => addNode(n as any))
-
-                        // Batch add edges
-                        const addEdges = useSynapseStore.getState().addEdges
-                        addEdges(newEdges as any)
-                    }
-                })
-            } else {
-                const newNode: ServiceNodeType = {
-                    id: generateId(),
-                    type: 'service',
-                    position: snappedPosition,
-                    style: { width: 280, height: 180 },
-                    data: {
-                        label: dragData.label,
-                        icon: dragData.icon || 'Box',
-                        status: 'idle',
-                        description: '',
-                        metadata: {},
-                    },
-                }
-                addNode(newNode)
-                setSelectedNodeId(newNode.id)
-            }
-        },
-        [addNode, viewport, setSelectedNodeId]
-    )
+    // Using Custom Hooks
+    const { onDragOver, onDrop } = useCanvasDrop(reactFlowWrapper)
+    const { menu, onNodeContextMenu, onPaneContextMenu, closeMenu } = useContextMenu()
 
     // Handle node selection
     const onNodeClick = useCallback(
