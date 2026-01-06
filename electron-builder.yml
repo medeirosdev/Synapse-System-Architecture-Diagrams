@@ -1,0 +1,44 @@
+appId: com.synapse.diagrams
+productName: Synapse
+copyright: Copyright © 2024 Synapse Contributors
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist
+  - dist-electron
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/synapse-icon.png
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Synapse
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: public/synapse-icon.png
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: public/synapse-icon.png
+  category: Graphics
+  artifactName: ${productName}-${version}.${ext}
